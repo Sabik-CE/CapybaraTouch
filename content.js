@@ -119,6 +119,32 @@ function setLink(id, url, label) {
   if (label) element.textContent = label;
 }
 
+function renderSocialLinks(meta) {
+  const icons = {
+    instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".7" fill="currentColor"/></svg>',
+    twitter: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 6.5a7.3 7.3 0 0 1-2.2.6 3.7 3.7 0 0 0 1.6-2 7.5 7.5 0 0 1-2.4.9 3.8 3.8 0 0 0-6.5 3.4 10.8 10.8 0 0 1-7.8-4 3.8 3.8 0 0 0 1.2 5.1 3.7 3.7 0 0 1-1.7-.5 3.8 3.8 0 0 0 3 3.8 3.8 3.8 0 0 1-1.7.1 3.8 3.8 0 0 0 3.5 2.7 7.6 7.6 0 0 1-4.7 1.6H2a10.8 10.8 0 0 0 5.8 1.7c7 0 10.9-5.8 10.6-11A7.6 7.6 0 0 0 21 6.5Z" fill="currentColor" stroke="none"/></svg>',
+    facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="M14 7h-1.4c-1 0-1.3.5-1.3 1.4V10H14l-.4 2.6h-2.3V19" stroke="#1877ef" stroke-width="2.5"/></svg>',
+    eight: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2-3-3.5-4-5.5-4a4 4 0 1 0 0 8c2 0 3.5-1 5.5-4Zm0 0c2-3 3.5-4 5.5-4a4 4 0 1 1 0 8c-2 0-3.5-1-5.5-4Z"/></svg>',
+    note: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h10v16H6V8l2-4Z"/><path d="M9 4v5H6"/></svg>',
+    contact: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="14" height="16" rx="2"/><path d="M3 7h5M3 12h5M3 17h5M12 9h4M12 13h4"/></svg>',
+  };
+  const items = [
+    ["instagram", "Instagram", meta.instagram_url],
+    ["twitter", "Twitter", meta.twitter_url],
+    ["facebook", "Facebook", meta.facebook_url],
+    ["eight", "Eight", meta.eight_url],
+    ["note", "note", meta.note_url],
+    ["contact", "Contact", ""],
+  ];
+  document.getElementById("social-grid").innerHTML = items.map(([key, label, url]) => {
+    const href = safeUrl(url);
+    const content = `${icons[key]}<span>${label}</span>`;
+    if (key === "contact") return `<button class="social-tile contact" type="button" data-open aria-label="名刺情報を表示">${content}</button>`;
+    return href ? `<a class="social-tile ${key}" href="${escapeHtml(href)}" target="_blank" rel="noopener">${content}</a>`
+      : `<span class="social-tile ${key}" aria-label="${label} のリンクは未設定">${content}</span>`;
+  }).join("");
+}
+
 function render({ meta, sections }) {
   document.title = meta.page_title || meta.name || "プロフィール";
   document.getElementById("profile-name").textContent = meta.name || "";
@@ -133,6 +159,11 @@ function render({ meta, sections }) {
   document.getElementById("intro").innerHTML = intro.map((paragraph, index) => renderParagraph(paragraph, index ? "muted" : "")).join("");
   document.getElementById("morePanel").innerHTML = renderMore(sections.More || []);
   document.getElementById("feed").innerHTML = renderCards(sections.Cards || []);
+  renderSocialLinks(meta);
+  document.querySelector(".social-tile.contact").addEventListener("click", () => {
+    document.getElementById("dialog").hidden = false;
+    document.body.style.overflow = "hidden";
+  });
 
   const brand = document.getElementById("brand");
   brand.src = safeUrl(meta.brand_image);
