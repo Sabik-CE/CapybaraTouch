@@ -121,19 +121,19 @@ function setLink(id, url, label) {
 
 function renderSocialLinks(meta) {
   const icons = {
-    instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".7" fill="currentColor"/></svg>',
-    twitter: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 6.5a7.3 7.3 0 0 1-2.2.6 3.7 3.7 0 0 0 1.6-2 7.5 7.5 0 0 1-2.4.9 3.8 3.8 0 0 0-6.5 3.4 10.8 10.8 0 0 1-7.8-4 3.8 3.8 0 0 0 1.2 5.1 3.7 3.7 0 0 1-1.7-.5 3.8 3.8 0 0 0 3 3.8 3.8 3.8 0 0 1-1.7.1 3.8 3.8 0 0 0 3.5 2.7 7.6 7.6 0 0 1-4.7 1.6H2a10.8 10.8 0 0 0 5.8 1.7c7 0 10.9-5.8 10.6-11A7.6 7.6 0 0 0 21 6.5Z" fill="currentColor" stroke="none"/></svg>',
+    x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h4l12 18h-4L4 3Zm16 0L4 21"/></svg>',
     facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="M14 7h-1.4c-1 0-1.3.5-1.3 1.4V10H14l-.4 2.6h-2.3V19" stroke="#1877ef" stroke-width="2.5"/></svg>',
     eight: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2-3-3.5-4-5.5-4a4 4 0 1 0 0 8c2 0 3.5-1 5.5-4Zm0 0c2-3 3.5-4 5.5-4a4 4 0 1 1 0 8c-2 0-3.5-1-5.5-4Z"/></svg>',
     note: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h10v16H6V8l2-4Z"/><path d="M9 4v5H6"/></svg>',
+    researchmap: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5M8 10.5h5M10.5 8v5"/></svg>',
     contact: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="14" height="16" rx="2"/><path d="M3 7h5M3 12h5M3 17h5M12 9h4M12 13h4"/></svg>',
   };
   const items = [
-    ["instagram", "Instagram", meta.instagram_url],
-    ["twitter", "Twitter", meta.twitter_url],
-    ["facebook", "Facebook", meta.facebook_url],
+    ["x", "X", meta.x_url],
+    ["facebook", "FB", meta.facebook_url],
     ["eight", "Eight", meta.eight_url],
     ["note", "note", meta.note_url],
+    ["researchmap", "リサーチマップ", meta.researchmap_url],
     ["contact", "Contact", ""],
   ];
   document.getElementById("social-grid").innerHTML = items.map(([key, label, url]) => {
@@ -166,17 +166,28 @@ function render({ meta, sections }) {
   });
 
   const brand = document.getElementById("brand");
-  brand.src = safeUrl(meta.brand_image);
-  brand.alt = meta.brand_alt || "";
-  document.querySelectorAll("[data-create-page]").forEach((link) => { link.href = safeUrl(meta.create_page_url); });
+  if (safeUrl(meta.brand_image)) {
+    brand.src = safeUrl(meta.brand_image);
+    brand.alt = meta.brand_alt || "";
+  } else {
+    brand.remove();
+  }
+  document.querySelectorAll("[data-create-page]").forEach((link) => {
+    if (safeUrl(meta.create_page_url)) link.href = safeUrl(meta.create_page_url);
+    else link.remove();
+  });
+  if (!safeUrl(meta.create_page_url)) document.querySelector(".profile-actions").remove();
 
   document.getElementById("contact-name").textContent = [meta.name, meta.name_latin].filter(Boolean).join(" / ");
-  setLink("contact-email", `mailto:${meta.email}`, meta.email);
-  setLink("contact-phone", `tel:${meta.phone_link || meta.phone}`, meta.phone);
+  if (meta.email) setLink("contact-email", `mailto:${meta.email}`, meta.email);
+  else document.getElementById("contact-email").closest("li").remove();
+  if (meta.phone) setLink("contact-phone", `tel:${meta.phone_link || meta.phone}`, meta.phone);
+  else document.getElementById("contact-phone").closest("li").remove();
   setLink("contact-website", meta.website, meta.website_label || meta.website);
-  document.getElementById("contact-location").textContent = meta.location || "";
-  document.querySelector('[data-copy="email"]').dataset.copyValue = meta.email || "";
-  document.querySelector('[data-copy="phone"]').dataset.copyValue = meta.phone || "";
+  if (meta.location) document.getElementById("contact-location").textContent = meta.location;
+  else document.getElementById("contact-location").closest("li").remove();
+  if (meta.email) document.querySelector('[data-copy="email"]').dataset.copyValue = meta.email;
+  if (meta.phone) document.querySelector('[data-copy="phone"]').dataset.copyValue = meta.phone;
 }
 
 function bindInteractions() {
